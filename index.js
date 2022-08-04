@@ -21,10 +21,27 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/users', function (req, res) {
-  res.send({
+  let data = {
     _id: usersData.length,
     username: req.body.username
-  })
+  }
+
+  usersData.push(data)
+
+  res.send(data)
+})
+
+app.get('/api/users', function (req, res) {
+  let users = []
+  for (let i = 0; i < usersData.length; i++) {
+    let user = {
+      _id: usersData[i]._id,
+      username: usersData[i].username
+    }
+    users.push(user)
+  }
+
+  res.send(users)
 })
 
 
