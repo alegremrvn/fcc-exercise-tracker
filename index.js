@@ -102,6 +102,40 @@ app.post('/api/users/:_id/exercises', function (req, res) {
   }
 })
 
+app.get('/api/users/:_id/logs', function (req, res) {
+  let count = 0
+  let index
+  for (let i = 0; i < usersData.length; i++) {
+    if (req.params._id != usersData[i]._id) {
+      count++
+    } else {
+      index = i
+      break
+    }
+  }
+  if (count === usersData.length) {
+    res.json({
+      error: "No such id exist in the database"
+    })
+  } else {
+    let logCopy = JSON.parse(JSON.stringify(usersData[index].log))
+    for (let i = 0; i < logCopy.length; i++) {
+      logCopy[i].date = new Date(logCopy[i].date).toDateString()
+    }
+
+    res.json({
+      _id: usersData[index]._id,
+      username: usersData[index].username,
+      count: usersData[index].count,
+      log: logCopy
+    })
+  }
+})
+
+app.get('/users', function (req, res) {
+  res.send(usersData)
+})
+
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
