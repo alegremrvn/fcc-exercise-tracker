@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/users', function (req, res) {
   let data = {
-    _id: usersData.length,
+    _id: String(usersData.length),
     username: req.body.username
   }
 
