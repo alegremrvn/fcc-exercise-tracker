@@ -72,7 +72,7 @@ app.post('/api/users/:_id/exercises', function (req, res) {
       date: new Date()
     }
 
-    usersData[index].log.push(data)
+    usersData[index].log.unshift(data)
 
     res.json({
       _id: usersData[index]._id,
@@ -90,7 +90,22 @@ app.post('/api/users/:_id/exercises', function (req, res) {
       date: new Date(req.body.date)
     }
 
-    usersData[index].log.push(data)
+    if (usersData[index].count === 1) {
+      usersData[index].log.push(data)
+    } else {
+      let inserted = false
+      for (let i = 0; i < usersData[index].log.length; i++) {
+        if (data.date >= usersData[index].log[i].date) {
+          usersData[index].log.splice(i, 0, data)
+          inserted = true
+          break
+        }
+      }
+
+      if (!inserted) {
+        usersData[index].log.push(data)
+      }
+    }
 
     res.json({
       _id: usersData[index]._id,
@@ -120,13 +135,45 @@ app.get('/api/users/:_id/logs', function (req, res) {
   } else {
     let logCopy = JSON.parse(JSON.stringify(usersData[index].log))
     for (let i = 0; i < logCopy.length; i++) {
-      logCopy[i].date = new Date(logCopy[i].date).toDateString()
+      logCopy[i].date = new Date(logCopy[i].date)
+    }
+
+    if (req.query.from != undefined) {
+      let count = 0
+      for (let i = 0; i < logCopy.length; i++) {
+        if (new Date(req.query.from) <= logCopy[i].date) {
+          count++
+        } else {
+          break
+        }
+      }
+
+      logCopy = logCopy.slice(0, count)
+    }
+
+    if (req.query.to != undefined) {
+      let count = 0
+      for (let i = 0; i < logCopy.length; i++) {
+        if (logCopy[i].date > new Date(req.query.to)) {
+          count++
+        }
+      }
+
+      logCopy = logCopy.slice(count, logCopy.length)
+    }
+
+    if (req.query.limit != undefined) {
+      logCopy = logCopy.slice(0, req.query.limit)
+    }
+
+    for (let i = 0; i < logCopy.length; i++) {
+      logCopy[i].date = logCopy[i].date.toDateString()
     }
 
     res.json({
       _id: usersData[index]._id,
       username: usersData[index].username,
-      count: usersData[index].count,
+      count: logCopy.length,
       log: logCopy
     })
   }
